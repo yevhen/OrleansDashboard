@@ -43,6 +43,10 @@ namespace TestHost
 
         private static async Task CallGenerator(CancellationTokenSource tokenSource)
         {
+            var a = GrainClient.GrainFactory.GetGrain<ITestMessageBasedGrain>(42);
+            a.Receive("string").Wait();
+            a.Receive(DateTime.UtcNow).Wait();
+
             var x = GrainClient.GrainFactory.GetGrain<ITestGenericGrain<string, int>>("test");
             x.TestT("string").Wait();
             x.TestU(1).Wait();

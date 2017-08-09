@@ -58,6 +58,7 @@
   <ItemGroup>
     <Compile Include="TestGenericGrain.cs" />
     <Compile Include="GenericGrain.cs" />
+    <Compile Include="TestMessageBasedGrain.cs" />
     <Compile Include="TestGrain.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
