@@ -144,15 +144,23 @@ namespace OrleansDashboard
             {
                 Dispatch(async () =>
                 {
-                    await dashboardGrain.SubmitTracing(siloAddress, data).ConfigureAwait(false);
+                    try
+                    {
+                        await dashboardGrain.SubmitTracing(siloAddress, data).ConfigureAwait(false);
+                    }
+                    catch (SiloUnavailableException ex)
+                    {
+                        // ignore
+                        this.Logger.Log(100001, Severity.Warning, "Exception thrown sending tracing to dashboard grain", new object[0], ex);
+                    }
                     return null;
-                }).Wait(30000);
+                })
+                .Wait(30000);
             }
             catch (Exception ex)
             {
                 this.Logger.Log(100001, Severity.Warning, "Exception thrown sending tracing to dashboard grain", new object[0], ex);
             }
-            
         }
 
         public void Dispose()
