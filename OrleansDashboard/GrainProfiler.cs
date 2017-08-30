@@ -148,7 +148,7 @@ namespace OrleansDashboard
                     {
                         await dashboardGrain.SubmitTracing(siloAddress, data).ConfigureAwait(false);
                     }
-                    catch (SiloUnavailableException ex)
+                    catch (Exception ex) when (ex is SiloUnavailableException || ex is TimeoutException)
                     {
                         // ignore
                         this.Logger.Log(100001, Severity.Warning, "Exception thrown sending tracing to dashboard grain", new object[0], ex);
