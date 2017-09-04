@@ -98,13 +98,12 @@ namespace OrleansDashboard
 
 
             var dashboardGrain = providerRuntime.GrainFactory.GetGrain<IDashboardGrain>(0);
-            await dashboardGrain.Init();
+            await Dispatch(dashboardGrain.Init().WithTimeout(TimeSpan.FromSeconds(5)));
 
             
             var siloGrain = providerRuntime.GrainFactory.GetGrain<ISiloGrain>(providerRuntime.ToSiloAddress());
-            await siloGrain.SetOrleansVersion(typeof(SiloAddress).Assembly.GetName().Version.ToString());
+            await Dispatch(siloGrain.SetOrleansVersion(typeof(SiloAddress).Assembly.GetName().Version.ToString()).WithTimeout(TimeSpan.FromSeconds(5)));
             Trace.Listeners.Add(dashboardTraceListener);
-
 
 
             // horrible hack to grab the scheduler 
@@ -112,6 +111,19 @@ namespace OrleansDashboard
             // counters to grains
             OrleansScheduler = TaskScheduler.Current;
 
+        }
+
+        async Task Dispatch(Task task)
+        {
+            try
+            {
+                await task;
+            }
+            catch (Exception ex) when (ex is SiloUnavailableException || ex is TimeoutException)
+            {
+                // ignore
+                logger.Log(100001, Severity.Warning, "Ignored exceptions occured during silo unavailability", new object[0], ex);
+            }
         }
     }
 }

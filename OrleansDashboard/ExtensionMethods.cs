@@ -7,6 +7,8 @@ using System.Threading.Tasks;
 using Microsoft.Owin;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
+
+using Orleans;
 using Orleans.Providers;
 using Orleans.Runtime.Configuration;
 
@@ -14,6 +16,20 @@ namespace OrleansDashboard
 {
     public static class ExtensionMethods
     {
+        public static async Task WithTimeout(this Task task, TimeSpan timeout)
+        {
+            var delay = Task.Delay(timeout);
+            var any = await Task.WhenAny(delay, task);
+            if (any != delay)
+            {
+                await task;
+                return;
+            }
+
+            task.Ignore();
+            throw new TimeoutException($"Task took more than specified {timeout}");
+        }
+
         public static async Task ReturnFile(this IOwinContext context, string name, string contentType)
         {
             context.Response.ContentType = contentType;
