@@ -7,6 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 using Orleans;
 using Orleans.CodeGeneration;
+using Orleans.Runtime.Configuration;
 using Orleans.TestingHost;
 using OrleansDashboard;
 using TestGrains;
