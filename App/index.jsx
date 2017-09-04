@@ -17,6 +17,7 @@ var SiloState = require('./silos/silo-state-label.jsx');
 var Alert = require('./components/alert.jsx');
 var LogStream = require('./logstream/log-stream.jsx');
 var SiloCounters = require('./silos/silo-counters.jsx');
+var Reminders = require('./reminders/reminders.jsx');
 var timer;
 
 var dashboardCounters = {};
@@ -219,6 +220,36 @@ routie('/grain/:grainType', function(grainType){
 
 });
 
+routie('/reminders/:page?', function(page){
+    var thisRouteIndex = ++routeIndex;
+    events.clearAll();
+    scroll();
+    renderLoading();
+
+    var remindersData = [];
+    if (page){
+      page = parseInt(page);
+    } else {
+      page = 1;
+    }
+
+    var renderReminders = function(){
+        if (routeIndex != thisRouteIndex) return;
+        renderPage(<Page title="Reminders"><Reminders remindersData={remindersData} page={page} /></Page>, "#/reminders");
+    }
+
+    var loadData = function(cb){
+        http.get(`/Reminders/${page}`, function(err, data){
+            remindersData = data;
+            renderReminders();
+        });
+    }
+
+    events.on('long-refresh', loadData);
+
+    loadData();
+});
+
 routie('/trace', function(){
     var thisRouteIndex = ++routeIndex;
     events.clearAll();
@@ -229,6 +260,7 @@ routie('/trace', function(){
 
 
 setInterval(() => events.emit('refresh'), 1000);
+setInterval(() => events.emit('long-refresh'), 10000);
 
 routie.reload();
 
@@ -249,6 +281,11 @@ function getMenu(){
         {
             name:"Silos",
             path:"#/silos",
+            icon:"fa-circle"
+        },
+        {
+            name:"Reminders",
+            path:"#/reminders",
             icon:"fa-circle"
         },
         {

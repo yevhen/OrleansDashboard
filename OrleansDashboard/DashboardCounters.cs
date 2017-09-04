@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Orleans.Runtime;
 
 namespace OrleansDashboard
 {
@@ -41,6 +42,7 @@ namespace OrleansDashboard
         public string StartTime { get; set; }
         public string Status { get; set; }
         public int UpdateZone { get; set; }
+        public SiloStatus SiloStatus { get; set; }
     }
 
     public class DashboardCounters
@@ -116,5 +118,14 @@ namespace OrleansDashboard
         public double TotalAwaitTime { get; set; }
         public long TotalCalls { get; set; }
         public long TotalExceptions { get; set; }
+    }
+
+    public class ReminderInfo
+    {
+        public string GrainReference { get; set; }
+        public string Name { get; set; }
+        public DateTime StartAt { get; set; }
+        public TimeSpan Period { get; set; }
+        public string PrimaryKey { get; set; }
     }
 }

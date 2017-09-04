@@ -7,7 +7,6 @@ using Microsoft.Extensions.DependencyInjection;
 
 using Orleans;
 using Orleans.CodeGeneration;
-using Orleans.Runtime.Configuration;
 using Orleans.TestingHost;
 using OrleansDashboard;
 using TestGrains;
@@ -29,11 +28,10 @@ namespace TestHost
             cluster.Deploy();
 
             // generate some calls to a test grain
-            GrainClient.Initialize(ClientConfiguration.LocalhostSilo());
             Console.WriteLine("All silos are up and running");
 
             var tokenSource = new CancellationTokenSource();
-            var t = new Thread(() => CallGenerator(tokenSource).Wait());
+            var t = new Thread(() => CallGenerator(cluster.Client, tokenSource).Wait());
             t.Start();
 
             Console.ReadLine();
@@ -70,14 +68,14 @@ namespace TestHost
             }
         }
 
-        private static async Task CallGenerator(CancellationTokenSource tokenSource)
+        private static async Task CallGenerator(IClusterClient client, CancellationTokenSource tokenSource)
         {
-            var a = GrainClient.GrainFactory.GetGrain<ITestMessageBasedGrain>(42);
+            var a = client.GetGrain<ITestMessageBasedGrain>(42);
             a.Receive("string").Wait();
             a.ReceiveVoid(DateTime.UtcNow).Wait();
             a.Notify(null).Wait();
 
-            var x = GrainClient.GrainFactory.GetGrain<ITestGenericGrain<string, int>>("test");
+            var x = client.GetGrain<ITestGenericGrain<string, int>>("test");
             x.TestT("string").Wait();
             x.TestU(1).Wait();
             x.TestTU("string", 1).Wait();
@@ -85,11 +83,11 @@ namespace TestHost
             var rand = new Random();
             while (!tokenSource.IsCancellationRequested)
             {
-                var client = GrainClient.GrainFactory.GetGrain<ITestGrain>(rand.Next(500));
-                await client.ExampleMethod1();
+                var testGrain = client.GetGrain<ITestGrain>(rand.Next(500));
+                await testGrain.ExampleMethod1();
                 try
                 {
-                    await client.ExampleMethod2();
+                    await testGrain.ExampleMethod2();
                 }
                 catch
                 { }
