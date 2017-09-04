@@ -32,8 +32,14 @@ namespace OrleansDashboard
         {
             var grain = this.ProviderRuntime.GrainFactory.GetGrain<ISiloGrain>(this.ProviderRuntime.ToSiloAddress());
             var values = statsCounters.Select(x => new StatCounter { Name = x.Name, Value = x.GetValueString(), Delta = x.IsValueDelta ? x.GetDeltaString() : null}).OrderBy(x => x.Name).ToArray();
-            await Dispatch(async () => {
-                await grain.ReportCounters(values);
+            await Dispatch(async () => 
+            {
+                try
+                {
+                    await grain.ReportCounters(values);
+                }
+                catch (Exception ex) when (ex is SiloUnavailableException || ex is TimeoutException)
+                { }
             });
         }
 
